@@ -27,106 +27,102 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
+            position: relative;
         }
         
-        header {
-            background-color: white;
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            border-bottom: 8px solid var(--secondary);
-        }
+        /* 原有样式保持不变... */
         
-        h1 {
-            font-family: 'Fredoka One', cursive;
-            color: var(--primary);
-            font-size: 2.5rem;
-            margin: 0;
-            padding: 10px 0;
-        }
-        
-        .subtitle {
-            color: var(--secondary);
-            font-size: 1.2rem;
-            margin-top: 10px;
-        }
-        
-        .course-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-            margin-top: 40px;
-        }
-        
-        .course-card {
-            background-color: white;
+        /* 小智聊天窗口样式 */
+        #xiaozhi-chat {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 350px;
+            background: white;
             border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
-            text-align: center;
-            border-top: 5px solid var(--accent);
+            box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            max-height: 500px;
         }
         
-        .course-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
-        }
-        
-        .course-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
-            color: var(--primary);
-        }
-        
-        .course-title {
-            font-family: 'Fredoka One', cursive;
-            color: var(--primary);
-            font-size: 1.5rem;
-            margin: 10px 0;
-        }
-        
-        .course-desc {
-            color: #666;
-            margin-bottom: 20px;
-            min-height: 60px;
-        }
-        
-        .btn {
-            display: inline-block;
-            background-color: var(--secondary);
+        #chat-header {
+            background: var(--primary);
             color: white;
-            padding: 12px 25px;
-            border-radius: 50px;
-            font-weight: bold;
-            text-decoration: none;
-            transition: background-color 0.3s, transform 0.2s;
-            box-shadow: 0 4px 8px rgba(255, 158, 79, 0.3);
+            padding: 12px 15px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
         }
         
-        .btn:hover {
-            background-color: #ff8c33;
-            transform: scale(1.05);
+        #chat-body {
+            padding: 15px;
+            flex-grow: 1;
+            overflow-y: auto;
+            max-height: 400px;
         }
         
-        footer {
-            text-align: center;
-            margin-top: 50px;
-            padding: 20px;
-            color: #666;
-            font-size: 0.9rem;
+        #chat-input {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #eee;
         }
         
-        @media (max-width: 768px) {
-            .course-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            h1 {
-                font-size: 2rem;
-            }
+        #chat-input input {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            margin-right: 10px;
+        }
+        
+        #chat-input button {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 15px;
+            cursor: pointer;
+        }
+        
+        .chat-message {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 15px;
+            max-width: 80%;
+        }
+        
+        .user-message {
+            background: var(--accent);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .bot-message {
+            background: #f0f0f0;
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+        }
+        
+        #chat-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--secondary);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 999;
         }
     </style>
 </head>
@@ -164,5 +160,126 @@
             <p>© 2023 Children's Learning Database | Made with ❤️ for young coders</p>
         </footer>
     </div>
+
+    <!-- 小智聊天窗口 -->
+    <div id="xiaozhi-chat">
+        <div id="chat-header">
+            <span>小智学习助手</span>
+            <span id="chat-close">×</span>
+        </div>
+        <div id="chat-body"></div>
+        <div id="chat-input">
+            <input type="text" id="user-input" placeholder="Ask me anything...">
+            <button id="send-btn">Send</button>
+        </div>
+    </div>
+    
+    <div id="chat-toggle">💬</div>
+
+    <script>
+        // WebSocket连接配置
+        const MCP_ENDPOINT = "wss://api.xiaozhi.me/mcp/?token=eyJhbGci..."; // 替换为您的token
+        
+        // DOM元素
+        const chatToggle = document.getElementById('chat-toggle');
+        const chatWindow = document.getElementById('xiaozhi-chat');
+        const chatClose = document.getElementById('chat-close');
+        const chatBody = document.getElementById('chat-body');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        
+        let socket;
+        
+        // 初始化WebSocket连接
+        function connectToXiaozhi() {
+            socket = new WebSocket(MCP_ENDPOINT);
+            
+            socket.onopen = function(e) {
+                console.log("Connected to Xiaozhi MCP");
+                addBotMessage("Hello! I'm Xiaozhi, your learning assistant. How can I help you today?");
+            };
+            
+            socket.onmessage = function(event) {
+                const response = JSON.parse(event.data);
+                if (response.type === "text") {
+                    addBotMessage(response.content);
+                }
+            };
+            
+            socket.onclose = function(event) {
+                if (event.wasClean) {
+                    console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
+                } else {
+                    console.error('Connection died');
+                    // 尝试重新连接
+                    setTimeout(connectToXiaozhi, 5000);
+                }
+            };
+            
+            socket.onerror = function(error) {
+                console.error(`WebSocket error: ${error.message}`);
+            };
+        }
+        
+        // 添加消息到聊天窗口
+        function addBotMessage(text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message bot-message';
+            messageDiv.textContent = text;
+            chatBody.appendChild(messageDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+        
+        function addUserMessage(text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message user-message';
+            messageDiv.textContent = text;
+            chatBody.appendChild(messageDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+        
+        // 发送消息
+        function sendMessage() {
+            const message = userInput.value.trim();
+            if (message && socket.readyState === WebSocket.OPEN) {
+                addUserMessage(message);
+                socket.send(JSON.stringify({
+                    type: "text",
+                    content: message
+                }));
+                userInput.value = '';
+            }
+        }
+        
+        // 事件监听
+        chatToggle.addEventListener('click', function() {
+            chatWindow.style.display = chatWindow.style.display === 'flex' ? 'none' : 'flex';
+            if (chatWindow.style.display === 'flex' && !socket) {
+                connectToXiaozhi();
+            }
+        });
+        
+        chatClose.addEventListener('click', function() {
+            chatWindow.style.display = 'none';
+        });
+        
+        sendBtn.addEventListener('click', sendMessage);
+        
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // 页面加载时发送上下文信息
+        window.addEventListener('load', function() {
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({
+                    type: "system",
+                    content: "User is browsing the learning platform homepage"
+                }));
+            }
+        });
+    </script>
 </body>
 </html>
