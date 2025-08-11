@@ -2,15 +2,369 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>Python 变量</title>
-    <link rel="stylesheet" href="../style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python变量完全指南</title>
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Fredoka+One&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4a6fa5;
+            --secondary: #ff9e4f;
+            --accent: #6bd3a0;
+            --light: #f8f9fa;
+            --dark: #2c3e50;
+        }
+        
+        body {
+            font-family: 'Comic Neue', cursive;
+            background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-family: 'Fredoka One', cursive;
+            color: var(--primary);
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            border-bottom: 3px solid var(--secondary);
+            padding-bottom: 15px;
+        }
+        
+        h2 {
+            color: var(--primary);
+            font-family: 'Fredoka One', cursive;
+            margin-top: 40px;
+            border-left: 5px solid var(--accent);
+            padding-left: 15px;
+        }
+        
+        h3 {
+            color: var(--secondary);
+            margin-top: 25px;
+        }
+        
+        .example-box {
+            background-color: #f5f5f5;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 4px solid var(--accent);
+        }
+        
+        pre {
+            background-color: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            tab-size: 4;
+        }
+        
+        code {
+            font-family: 'Courier New', monospace;
+            background-color: #f0f0f0;
+            padding: 2px 5px;
+            border-radius: 3px;
+            color: #d63384;
+        }
+        
+        .note {
+            background-color: #e7f4ff;
+            border-left: 4px solid var(--primary);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .warning {
+            background-color: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--secondary);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 4px 8px rgba(255, 158, 79, 0.3);
+            margin-top: 20px;
+        }
+        
+        .btn:hover {
+            background-color: #ff8c33;
+            transform: scale(1.05);
+        }
+        
+        .practice {
+            background-color: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 15px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Python 变量</h1>
-    <p>变量是用来存储数据的名字，例如：</p>
-    <pre><code>x = 5
-name = "Emily"</code></pre>
-    <p>在 Python 中，不需要提前声明变量类型。</p>
-    <p><a href="../index.html">返回目录</a></p>
+    <div class="container">
+        <h1>🐍 Python 变量完全指南</h1>
+        
+        <h2>什么是变量？</h2>
+        <p>变量是编程中用来存储数据的容器。你可以把变量想象成一个贴有标签的盒子，标签就是变量名，盒子里装的内容就是变量的值。</p>
+        
+        <div class="example-box">
+            <h3>简单示例</h3>
+            <pre><code># 创建一个名为age的变量，存储数字25
+age = 25
+
+# 创建一个名为name的变量，存储字符串"小明"
+name = "小明"
+
+# 打印变量
+print("姓名:", name)
+print("年龄:", age)</code></pre>
+        </div>
+        
+        <h2>变量命名规则</h2>
+        <p>在Python中，变量名需要遵循以下规则：</p>
+        <ul>
+            <li>只能包含字母、数字和下划线（A-z, 0-9, _）</li>
+            <li>不能以数字开头</li>
+            <li>不能是Python的关键字（如if, else, for等）</li>
+            <li>区分大小写（Age和age是不同的变量）</li>
+        </ul>
+        
+        <div class="example-box">
+            <h3>合法与非法变量名示例</h3>
+            <pre><code># 合法的变量名
+my_variable = 10
+variable2 = 20
+_user_name = "小红"
+MAX_SIZE = 100
+
+# 非法的变量名
+2variable = 30  # 不能以数字开头
+my-variable = 40  # 不能包含连字符
+for = 50  # 不能使用关键字</code></pre>
+        </div>
+        
+        <div class="note">
+            <p>📌 <strong>命名建议</strong>：使用有意义的变量名，避免使用单个字母（除非是简单的循环计数器）。Python通常使用小写字母和下划线（snake_case）作为变量命名风格。</p>
+        </div>
+        
+        <h2>变量类型</h2>
+        <p>Python是动态类型语言，不需要显式声明变量类型。Python会自动根据赋值确定变量类型。</p>
+        
+        <div class="example-box">
+            <h3>基本数据类型</h3>
+            <pre><code># 整数 (int)
+age = 12
+
+# 浮点数 (float)
+height = 1.75
+
+# 字符串 (str)
+name = "李雷"
+
+# 布尔值 (bool)
+is_student = True
+
+# 列表 (list)
+fruits = ["苹果", "香蕉", "橙子"]
+
+# 元组 (tuple)
+dimensions = (1920, 1080)
+
+# 字典 (dict)
+student = {"name": "韩梅梅", "age": 13}</code></pre>
+        </div>
+        
+        <h2>变量赋值</h2>
+        <p>Python中有多种赋值方式：</p>
+        
+        <div class="example-box">
+            <h3>1. 简单赋值</h3>
+            <pre><code>x = 10
+message = "你好，世界！"</code></pre>
+            
+            <h3>2. 多重赋值</h3>
+            <pre><code># 同时给多个变量赋相同的值
+a = b = c = 100
+
+# 同时给多个变量赋不同的值
+name, age, height = "王芳", 14, 1.65</code></pre>
+            
+            <h3>3. 交换变量值</h3>
+            <pre><code>x = 5
+y = 10
+x, y = y, x  # 交换x和y的值</code></pre>
+        </div>
+        
+        <h2>变量作用域</h2>
+        <p>变量的作用域决定了在哪里可以访问这个变量：</p>
+        
+        <div class="example-box">
+            <h3>1. 全局变量</h3>
+            <pre><code>school = "阳光小学"  # 全局变量
+
+def print_school():
+    print("学校:", school)  # 可以访问全局变量
+
+print_school()</code></pre>
+            
+            <h3>2. 局部变量</h3>
+            <pre><code>def calculate():
+    result = 10 + 5  # 局部变量
+    print("结果:", result)
+
+calculate()
+# print(result)  # 这里会报错，因为result是局部变量</code></pre>
+            
+            <h3>3. 使用global关键字</h3>
+            <pre><code>count = 0
+
+def increment():
+    global count  # 声明使用全局变量
+    count += 1
+
+increment()
+print("计数:", count)  # 输出: 计数: 1</code></pre>
+        </div>
+        
+        <div class="warning">
+            <p>⚠️ <strong>注意</strong>：尽量避免过多使用全局变量，这会使代码难以维护和理解。</p>
+        </div>
+        
+        <h2>常量</h2>
+        <p>Python没有真正的常量，但约定用全大写字母表示常量（不应该被修改的值）。</p>
+        
+        <div class="example-box">
+            <pre><code>PI = 3.14159
+MAX_USERS = 100
+
+# 虽然技术上可以修改，但不应该这样做
+# PI = 3.14  # 不推荐</code></pre>
+        </div>
+        
+        <h2>类型转换</h2>
+        <p>有时需要在不同类型之间转换：</p>
+        
+        <div class="example-box">
+            <h3>类型转换示例</h3>
+            <pre><code># 字符串转整数
+age = "12"
+age_int = int(age)
+
+# 整数转字符串
+student_id = 12345
+id_str = str(student_id)
+
+# 浮点数转整数
+price = 9.99
+price_int = int(price)  # 会截断小数部分
+
+# 布尔值转换
+has_homework = "True"  # 注意这是字符串
+is_true = bool(has_homework)  # 非空字符串会转为True</code></pre>
+        </div>
+        
+        <div class="practice">
+            <h3>动手练习</h3>
+            <p>尝试完成以下练习：</p>
+            <ol>
+                <li>创建一个变量存储你的名字，另一个变量存储你的年龄，然后打印出来</li>
+                <li>交换两个变量的值（a=5, b=10 → a=10, b=5）</li>
+                <li>尝试将字符串"100"转换为整数并进行数学运算</li>
+                <li>创建一个全局变量和一个局部变量，观察它们的区别</li>
+            </ol>
+        </div>
+        
+        <h2>高级主题</h2>
+        <h3>1. 可变与不可变类型</h3>
+        <p>Python中有些数据类型是可变的（可以修改），有些是不可变的（不能修改）：</p>
+        
+        <div class="example-box">
+            <pre><code># 不可变类型（修改会创建新对象）
+x = 10
+y = x
+x = 20  # y仍然是10
+
+# 可变类型（修改会影响所有引用）
+list1 = [1, 2, 3]
+list2 = list1
+list1.append(4)  # list2也会变成[1, 2, 3, 4]</code></pre>
+        </div>
+        
+        <h3>2. 变量内存管理</h3>
+        <p>Python使用引用计数和垃圾回收机制管理内存：</p>
+        
+        <div class="example-box">
+            <pre><code>import sys
+
+a = [1, 2, 3]
+print(sys.getrefcount(a))  # 查看引用计数
+
+b = a
+print(sys.getrefcount(a))  # 引用计数增加
+
+del b  # 删除一个引用
+print(sys.getrefcount(a))  # 引用计数减少</code></pre>
+        </div>
+        
+        <h3>3. 特殊变量名</h3>
+        <p>Python中有一些特殊命名约定：</p>
+        
+        <div class="example-box">
+            <pre><code># 单下划线开头：表示内部使用
+_internal_var = "仅供内部使用"
+
+# 双下划线开头：名称修饰（Name Mangling）
+__private_var = "私有变量"
+
+# 双下划线开头和结尾：特殊方法
+__init__ = "构造函数"</code></pre>
+        </div>
+        
+        <div class="note">
+            <p>📌 <strong>小技巧</strong>：使用<code>type()</code>函数可以查看变量的类型：<code>print(type(age))</code></p>
+        </div>
+        
+        <center>
+            <a href="../index.html" class="btn">返回目录</a>
+        </center>
+    </div>
 </body>
 </html>
