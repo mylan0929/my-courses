@@ -178,7 +178,7 @@
 
     <script>
         // WebSocket连接配置
-        const MCP_ENDPOINT = "ws://api.xiaozhi.me/mcp/?token=eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjM3NTc2NiwiYWdlbnRJZCI6NDYxNTkyLCJlbmRwb2ludElkIjoiYWdlbnRfNDYxNTkyIiwicHVycG9zZSI6Im1jcC1lbmRwb2ludCIsImlhdCI6MTc1NDg3NzYyOX0.PN0hyxRnCxEvm_qLMGJnkOBcfJWP2WqqCou-qKWjWZu3CWvzYV5ClMa_mCgFRD9vzMB1oLrVZ5l2dtzwZyR1LA"; // 替换为您的token
+        const MCP_ENDPOINT = "ws://api.xiaozhi.me/mcp/?token=eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjM3NTc2NiwiYWdlbnRJZCI6NDYxNTkyLCJlbmRwb2ludElkIjoiYWdlbnRfNDYxNTkyIiwicHVycG9zZSI6Im1jcC1lbmRwb2ludCIsImlhdCI6MTc1NDg3ODE1OX0.8hhiYL1uUMMRdeXBOZbuqenBeYwBbNvLb9b5k8_tFR7Y7VF5e_eTT6dY2n25ioBYvQYhxvY8hbQgR7_2rcEIcw"; // 替换为您的真实token
         
         // DOM元素
         const chatToggle = document.getElementById('chat-toggle');
@@ -188,39 +188,59 @@
         const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
         
-        let socket;
-        
+        let socket = null;
+        let isConnecting = false;
+    
         // 初始化WebSocket连接
         function connectToXiaozhi() {
+            if (isConnecting) return;
+            
+            isConnecting = true;
             socket = new WebSocket(MCP_ENDPOINT);
             
             socket.onopen = function(e) {
                 console.log("Connected to Xiaozhi MCP");
-                addBotMessage("Hello! I'm Xiaozhi, your learning assistant. How can I help you today?");
+                isConnecting = false;
+                addBotMessage("你好！我是小智学习助手，有什么可以帮你的吗？");
+                
+                // 发送当前页面上下文
+                const pageInfo = {
+                    type: "system",
+                    content: `用户正在访问: ${document.title}`,
+                    url: window.location.href
+                };
+                socket.send(JSON.stringify(pageInfo));
             };
             
             socket.onmessage = function(event) {
-                const response = JSON.parse(event.data);
-                if (response.type === "text") {
-                    addBotMessage(response.content);
+                try {
+                    const response = JSON.parse(event.data);
+                    if (response.type === "text") {
+                        addBotMessage(response.content);
+                    }
+                } catch (e) {
+                    console.error("消息解析错误:", e);
                 }
             };
             
             socket.onclose = function(event) {
+                isConnecting = false;
                 if (event.wasClean) {
-                    console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
+                    console.log(`连接关闭: code=${event.code}, reason=${event.reason}`);
                 } else {
-                    console.error('Connection died');
-                    // 尝试重新连接
-                    setTimeout(connectToXiaozhi, 5000);
+                    console.error('连接异常断开');
+                    addBotMessage("⚠️ 连接断开，正在尝试重新连接...");
+                    setTimeout(connectToXiaozhi, 3000);
                 }
             };
             
             socket.onerror = function(error) {
-                console.error(`WebSocket error: ${error.message}`);
+                isConnecting = false;
+                console.error(`WebSocket错误:`, error);
+                addBotMessage("⚠️ 连接出现问题，请稍后再试");
             };
         }
-        
+    
         // 添加消息到聊天窗口
         function addBotMessage(text) {
             const messageDiv = document.createElement('div');
@@ -229,7 +249,7 @@
             chatBody.appendChild(messageDiv);
             chatBody.scrollTop = chatBody.scrollHeight;
         }
-        
+    
         function addUserMessage(text) {
             const messageDiv = document.createElement('div');
             messageDiv.className = 'chat-message user-message';
@@ -237,47 +257,64 @@
             chatBody.appendChild(messageDiv);
             chatBody.scrollTop = chatBody.scrollHeight;
         }
-        
-        // 发送消息
+    
+        // 发送消息（关键修复）
         function sendMessage() {
             const message = userInput.value.trim();
-            if (message && socket.readyState === WebSocket.OPEN) {
+            if (!message) return;
+    
+            // 确保连接已建立
+            if (!socket || socket.readyState !== WebSocket.OPEN) {
+                addBotMessage("正在连接助手，请稍等...");
+                connectToXiaozhi();
+                return;
+            }
+    
+            try {
                 addUserMessage(message);
                 socket.send(JSON.stringify({
                     type: "text",
-                    content: message
+                    content: message,
+                    timestamp: new Date().toISOString()
                 }));
                 userInput.value = '';
+            } catch (e) {
+                console.error("发送失败:", e);
+                addBotMessage("消息发送失败，请重试");
             }
         }
-        
-        // 事件监听
+    
+        // 事件监听（修复版）
         chatToggle.addEventListener('click', function() {
             chatWindow.style.display = chatWindow.style.display === 'flex' ? 'none' : 'flex';
-            if (chatWindow.style.display === 'flex' && !socket) {
+            if (chatWindow.style.display === 'flex' && (!socket || socket.readyState !== WebSocket.OPEN)) {
                 connectToXiaozhi();
             }
         });
-        
+    
         chatClose.addEventListener('click', function() {
             chatWindow.style.display = 'none';
         });
-        
-        sendBtn.addEventListener('click', sendMessage);
-        
-        userInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
+    
+        // 修复点击发送
+        sendBtn.addEventListener('click', function(e) {
+            e.preventDefault(); // 阻止默认行为
+            sendMessage();
+        });
+    
+        // 修复回车发送
+        userInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault(); // 阻止默认换行
                 sendMessage();
             }
         });
-        
-        // 页面加载时发送上下文信息
-        window.addEventListener('load', function() {
-            if (socket && socket.readyState === WebSocket.OPEN) {
-                socket.send(JSON.stringify({
-                    type: "system",
-                    content: "User is browsing the learning platform homepage"
-                }));
+    
+        // 页面可见性变化时重连
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible' && 
+                (!socket || [WebSocket.CLOSED, WebSocket.CLOSING].includes(socket.readyState))) {
+                connectToXiaozhi();
             }
         });
     </script>
