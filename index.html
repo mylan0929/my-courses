@@ -4,43 +4,165 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Children's Learning Database</title>
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Fredoka+One&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #4a6fa5;
+            --secondary: #ff9e4f;
+            --accent: #6bd3a0;
+            --light: #f8f9fa;
+            --dark: #2c3e50;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f8fb;
-            text-align: center;
+            font-family: 'Comic Neue', cursive;
+            background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            color: var(--dark);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
             padding: 20px;
         }
+        
+        header {
+            background-color: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            border-bottom: 8px solid var(--secondary);
+        }
+        
         h1 {
-            color: #2c3e50;
+            font-family: 'Fredoka One', cursive;
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin: 0;
+            padding: 10px 0;
         }
-        ul {
-            list-style: none;
-            padding: 0;
+        
+        .subtitle {
+            color: var(--secondary);
+            font-size: 1.2rem;
+            margin-top: 10px;
         }
-        li {
-            margin: 15px 0;
+        
+        .course-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 40px;
         }
-        a {
-            text-decoration: none;
-            background-color: #3498db;
+        
+        .course-card {
+            background-color: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-align: center;
+            border-top: 5px solid var(--accent);
+        }
+        
+        .course-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .course-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+        
+        .course-title {
+            font-family: 'Fredoka One', cursive;
+            color: var(--primary);
+            font-size: 1.5rem;
+            margin: 10px 0;
+        }
+        
+        .course-desc {
+            color: #666;
+            margin-bottom: 20px;
+            min-height: 60px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--secondary);
             color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 18px;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 4px 8px rgba(255, 158, 79, 0.3);
         }
-        a:hover {
-            background-color: #2980b9;
+        
+        .btn:hover {
+            background-color: #ff8c33;
+            transform: scale(1.05);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .course-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>📚 Children's Learning Database</h1>
-    <p>Select a course to start learning:</p>
-    <ul>
-        <li><a href="python_variables.html">Python - Variables</a></li>
-        <li><a href="python_loops.html">Python - Loops</a></li>
-        <li><a href="cpp_intro.html">C++ - Introduction</a></li>
-    </ul>
+    <div class="container">
+        <header>
+            <h1>🌟 Children's Learning Database</h1>
+            <p class="subtitle">Fun and interactive coding lessons for young learners!</p>
+        </header>
+        
+        <div class="course-grid">
+            <div class="course-card">
+                <div class="course-icon">🐍</div>
+                <h3 class="course-title">Python - Variables</h3>
+                <p class="course-desc">Learn how to store and use information in Python with fun examples!</p>
+                <a href="python_variables.html" class="btn">Start Learning</a>
+            </div>
+            
+            <div class="course-card">
+                <div class="course-icon">🔄</div>
+                <h3 class="course-title">Python - Loops</h3>
+                <p class="course-desc">Discover how to make your code repeat tasks automatically!</p>
+                <a href="python_loops.html" class="btn">Start Learning</a>
+            </div>
+            
+            <div class="course-card">
+                <div class="course-icon">➕</div>
+                <h3 class="course-title">C++ - Introduction</h3>
+                <p class="course-desc">Begin your journey with C++ in a simple and engaging way!</p>
+                <a href="cpp_intro.html" class="btn">Start Learning</a>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2023 Children's Learning Database | Made with ❤️ for young coders</p>
+        </footer>
+    </div>
 </body>
 </html>
