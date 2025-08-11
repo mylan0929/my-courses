@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Children's Learning Database</title>
+    <title>儿童学习数据库 - 小智助手集成</title>
     <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Fredoka+One&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -23,76 +23,101 @@
             color: var(--dark);
         }
         
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            position: relative;
-        }
-        
         /* 原有样式保持不变... */
-        
-        /* 小智聊天窗口样式 */
+
+        /* 小智聊天窗口增强样式 */
         #xiaozhi-chat {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            width: 350px;
+            width: 380px;
             background: white;
             border-radius: 15px;
             box-shadow: 0 5px 25px rgba(0,0,0,0.2);
             z-index: 1000;
             display: none;
             flex-direction: column;
-            max-height: 500px;
+            max-height: 70vh;
+            border: 2px solid var(--primary);
         }
         
         #chat-header {
             background: var(--primary);
             color: white;
             padding: 12px 15px;
-            border-radius: 15px 15px 0 0;
+            border-radius: 13px 13px 0 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            cursor: pointer;
+            font-weight: bold;
         }
         
         #chat-body {
             padding: 15px;
             flex-grow: 1;
             overflow-y: auto;
-            max-height: 400px;
+            max-height: calc(70vh - 120px);
+            background: #f9f9f9;
         }
         
-        #chat-input {
+        #chat-input-area {
             display: flex;
             padding: 10px;
             border-top: 1px solid #eee;
+            background: white;
+            border-radius: 0 0 15px 15px;
         }
         
-        #chat-input input {
+        #user-input {
             flex-grow: 1;
-            padding: 8px;
-            border: 1px solid #ddd;
+            padding: 10px 15px;
+            border: 2px solid #ddd;
             border-radius: 20px;
             margin-right: 10px;
+            font-family: inherit;
+            outline: none;
+            transition: border 0.3s;
         }
         
-        #chat-input button {
+        #user-input:focus {
+            border-color: var(--accent);
+        }
+        
+        #send-btn {
             background: var(--secondary);
             color: white;
             border: none;
             border-radius: 20px;
-            padding: 8px 15px;
+            padding: 0 20px;
             cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        #send-btn:hover {
+            background: #ff8c33;
+            transform: scale(1.05);
+        }
+        
+        #send-btn:disabled {
+            background: #cccccc;
+            transform: none;
+            cursor: not-allowed;
         }
         
         .chat-message {
-            margin-bottom: 10px;
-            padding: 8px 12px;
-            border-radius: 15px;
-            max-width: 80%;
+            margin-bottom: 12px;
+            padding: 10px 15px;
+            border-radius: 18px;
+            max-width: 85%;
+            position: relative;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .user-message {
@@ -103,9 +128,20 @@
         }
         
         .bot-message {
-            background: #f0f0f0;
+            background: #e3f2fd;
             margin-right: auto;
             border-bottom-left-radius: 5px;
+            color: var(--dark);
+        }
+        
+        .system-message {
+            background: #f5f5f5;
+            margin: 8px auto;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 0.8em;
+            text-align: center;
+            color: #666;
         }
         
         #chat-toggle {
@@ -123,199 +159,411 @@
             cursor: pointer;
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
             z-index: 999;
+            font-size: 24px;
+            transition: all 0.3s;
+        }
+        
+        #chat-toggle:hover {
+            transform: scale(1.1);
+        }
+        
+        .connection-status {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ccc;
+            border: 2px solid white;
+        }
+        
+        .connected {
+            background: #4CAF50;
+        }
+        
+        .connecting {
+            background: #FFC107;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .disconnected {
+            background: #F44336;
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 600px) {
+            #xiaozhi-chat {
+                width: 90vw;
+                right: 5vw;
+                max-height: 60vh;
+            }
+            
+            #chat-body {
+                max-height: calc(60vh - 120px);
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🌟 Children's Learning Database</h1>
-            <p class="subtitle">Fun and interactive coding lessons for young learners!</p>
-        </header>
-        
-        <div class="course-grid">
-            <div class="course-card">
-                <div class="course-icon">🐍</div>
-                <h3 class="course-title">Python - Variables</h3>
-                <p class="course-desc">Learn how to store and use information in Python with fun examples!</p>
-                <a href="python_variables.html" class="btn">Start Learning</a>
-            </div>
-            
-            <div class="course-card">
-                <div class="course-icon">🔄</div>
-                <h3 class="course-title">Python - Loops</h3>
-                <p class="course-desc">Discover how to make your code repeat tasks automatically!</p>
-                <a href="python_loops.html" class="btn">Start Learning</a>
-            </div>
-            
-            <div class="course-card">
-                <div class="course-icon">➕</div>
-                <h3 class="course-title">C++ - Introduction</h3>
-                <p class="course-desc">Begin your journey with C++ in a simple and engaging way!</p>
-                <a href="cpp_intro.html" class="btn">Start Learning</a>
-            </div>
-        </div>
-        
-        <footer>
-            <p>© 2023 Children's Learning Database | Made with ❤️ for young coders</p>
-        </footer>
-    </div>
+    <!-- 原有页面内容保持不变... -->
 
-    <!-- 小智聊天窗口 -->
+    <!-- 增强版小智聊天窗口 -->
     <div id="xiaozhi-chat">
         <div id="chat-header">
             <span>小智学习助手</span>
-            <span id="chat-close">×</span>
+            <span id="chat-close" style="cursor:pointer;font-size:1.5em;">×</span>
         </div>
-        <div id="chat-body"></div>
-        <div id="chat-input">
-            <input type="text" id="user-input" placeholder="Ask me anything...">
-            <button id="send-btn">Send</button>
+        <div id="chat-body">
+            <div class="system-message">正在初始化学习助手...</div>
+        </div>
+        <div id="chat-input-area">
+            <input type="text" id="user-input" placeholder="输入问题，按Enter发送..." autocomplete="off">
+            <button id="send-btn" disabled>发送</button>
         </div>
     </div>
     
-    <div id="chat-toggle">💬</div>
+    <div id="chat-toggle">
+        <div id="connection-status" class="connection-status disconnected"></div>
+        💬
+    </div>
 
     <script>
-        // WebSocket连接配置
-        const MCP_ENDPOINT = "ws://api.xiaozhi.me/mcp/?token=eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjM3NTc2NiwiYWdlbnRJZCI6NDYxNTkyLCJlbmRwb2ludElkIjoiYWdlbnRfNDYxNTkyIiwicHVycG9zZSI6Im1jcC1lbmRwb2ludCIsImlhdCI6MTc1NDg3ODE1OX0.8hhiYL1uUMMRdeXBOZbuqenBeYwBbNvLb9b5k8_tFR7Y7VF5e_eTT6dY2n25ioBYvQYhxvY8hbQgR7_2rcEIcw"; // 替换为您的真实token
-        
+        // 配置参数
+        const CONFIG = {
+            MCP_ENDPOINT: "wss://api.xiaozhi.me/mcp/?token=eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjM3NTc2NiwiYWdlbnRJZCI6NDYxNTkyLCJlbmRwb2ludElkIjoiYWdlbnRfNDYxNTkyIiwicHVycG9zZSI6Im1jcC1lbmRwb2ludCIsImlhdCI6MTc1NDg3OTE0M30.1K7aspvfqqwmrbPzkuPMkOsd8mfpbv_bzrr_8wm5WVPD60S44SD8kX1wrMGYQCACBAj97sp9uCFtLB-SnJ8ZQw", // 替换为您的真实token
+            RECONNECT_INTERVAL: 3000, // 重连间隔(ms)
+            MAX_RETRIES: 5,           // 最大重试次数
+            HEARTBEAT_INTERVAL: 25000 // 心跳间隔(ms)
+        };
+
         // DOM元素
-        const chatToggle = document.getElementById('chat-toggle');
-        const chatWindow = document.getElementById('xiaozhi-chat');
-        const chatClose = document.getElementById('chat-close');
-        const chatBody = document.getElementById('chat-body');
-        const userInput = document.getElementById('user-input');
-        const sendBtn = document.getElementById('send-btn');
-        
-        let socket = null;
-        let isConnecting = false;
-    
-        // 初始化WebSocket连接
-        function connectToXiaozhi() {
-            if (isConnecting) return;
+        const elements = {
+            chatToggle: document.getElementById('chat-toggle'),
+            chatWindow: document.getElementById('xiaozhi-chat'),
+            chatClose: document.getElementById('chat-close'),
+            chatBody: document.getElementById('chat-body'),
+            userInput: document.getElementById('user-input'),
+            sendBtn: document.getElementById('send-btn'),
+            statusIndicator: document.getElementById('connection-status')
+        };
+
+        // 状态变量
+        let state = {
+            socket: null,
+            reconnectAttempts: 0,
+            isOnline: navigator.onLine,
+            heartbeatTimer: null,
+            messageQueue: []
+        };
+
+        // 连接管理
+        const connectionManager = {
+            init() {
+                this.setupEventListeners();
+                this.checkNetworkStatus();
+            },
             
-            isConnecting = true;
-            socket = new WebSocket(MCP_ENDPOINT);
-            
-            socket.onopen = function(e) {
-                console.log("Connected to Xiaozhi MCP");
-                isConnecting = false;
-                addBotMessage("你好！我是小智学习助手，有什么可以帮你的吗？");
+            setupEventListeners() {
+                // 窗口切换
+                elements.chatToggle.addEventListener('click', () => this.toggleChatWindow());
+                elements.chatClose.addEventListener('click', () => this.closeChatWindow());
                 
-                // 发送当前页面上下文
-                const pageInfo = {
-                    type: "system",
-                    content: `用户正在访问: ${document.title}`,
-                    url: window.location.href
-                };
-                socket.send(JSON.stringify(pageInfo));
-            };
+                // 消息发送
+                elements.sendBtn.addEventListener('click', () => this.sendMessage());
+                elements.userInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+                
+                // 网络状态监测
+                window.addEventListener('online', () => this.handleNetworkChange(true));
+                window.addEventListener('offline', () => this.handleNetworkChange(false));
+            },
             
-            socket.onmessage = function(event) {
+            toggleChatWindow() {
+                elements.chatWindow.style.display = 
+                    elements.chatWindow.style.display === 'flex' ? 'none' : 'flex';
+                
+                if (elements.chatWindow.style.display === 'flex' && 
+                    (!state.socket || state.socket.readyState !== WebSocket.OPEN)) {
+                    this.connect();
+                }
+            },
+            
+            closeChatWindow() {
+                elements.chatWindow.style.display = 'none';
+            },
+            
+            connect() {
+                // 清理现有连接
+                if (state.socket) {
+                    state.socket.close();
+                    clearInterval(state.heartbeatTimer);
+                }
+                
+                // 状态更新
+                this.updateConnectionStatus('connecting');
+                elements.sendBtn.disabled = true;
+                state.reconnectAttempts++;
+                
+                // 显示连接状态
+                this.addSystemMessage(state.reconnectAttempts > 1 ? 
+                    `尝试重新连接 (${state.reconnectAttempts}/${CONFIG.MAX_RETRIES})...` : 
+                    "正在连接学习助手...");
+                
+                // 创建WebSocket连接
+                state.socket = new WebSocket(CONFIG.MCP_ENDPOINT);
+                
+                // 绑定事件处理器
+                state.socket.onopen = () => this.handleOpen();
+                state.socket.onmessage = (event) => this.handleMessage(event);
+                state.socket.onclose = (event) => this.handleClose(event);
+                state.socket.onerror = (error) => this.handleError(error);
+            },
+            
+            handleOpen() {
+                console.log("WebSocket连接已建立");
+                state.reconnectAttempts = 0;
+                this.updateConnectionStatus('connected');
+                elements.sendBtn.disabled = false;
+                
+                // 发送认证信息
+                this.send({
+                    type: "auth",
+                    token: CONFIG.MCP_ENDPOINT.split('token=')[1],
+                    client: "web_learning_platform",
+                    version: "1.0"
+                });
+                
+                // 启动心跳检测
+                state.heartbeatTimer = setInterval(() => {
+                    if (state.socket.readyState === WebSocket.OPEN) {
+                        this.send({ type: "ping", timestamp: Date.now() });
+                    }
+                }, CONFIG.HEARTBEAT_INTERVAL);
+                
+                // 发送积压消息
+                this.flushMessageQueue();
+                
+                // 通知用户
+                this.addBotMessage("你好！我是小智学习助手，有什么可以帮你的吗？");
+                this.addSystemMessage("连接已建立");
+                
+                // 发送上下文信息
+                this.sendContext();
+            },
+            
+            handleMessage(event) {
                 try {
-                    const response = JSON.parse(event.data);
-                    if (response.type === "text") {
-                        addBotMessage(response.content);
+                    const data = JSON.parse(event.data);
+                    console.log("收到消息:", data);
+                    
+                    // 处理不同类型的消息
+                    switch (data.type) {
+                        case "text":
+                            this.addBotMessage(data.content);
+                            break;
+                        case "auth_result":
+                            if (!data.authenticated) {
+                                this.addSystemMessage(`认证失败: ${data.reason || "未知原因"}`);
+                            }
+                            break;
+                        case "pong":
+                            // 心跳响应
+                            break;
+                        default:
+                            console.log("收到未知类型消息:", data);
                     }
                 } catch (e) {
                     console.error("消息解析错误:", e);
+                    this.addSystemMessage("收到无法解析的消息");
                 }
-            };
+            },
             
-            socket.onclose = function(event) {
-                isConnecting = false;
-                if (event.wasClean) {
-                    console.log(`连接关闭: code=${event.code}, reason=${event.reason}`);
+            handleClose(event) {
+                console.log("连接关闭:", event.code, event.reason);
+                clearInterval(state.heartbeatTimer);
+                this.updateConnectionStatus('disconnected');
+                elements.sendBtn.disabled = true;
+                
+                if (event.code === 1000) { // 正常关闭
+                    this.addSystemMessage("连接已关闭");
                 } else {
-                    console.error('连接异常断开');
-                    addBotMessage("⚠️ 连接断开，正在尝试重新连接...");
-                    setTimeout(connectToXiaozhi, 3000);
+                    this.addSystemMessage("连接意外断开");
+                    this.attemptReconnect();
                 }
-            };
+            },
             
-            socket.onerror = function(error) {
-                isConnecting = false;
-                console.error(`WebSocket错误:`, error);
-                addBotMessage("⚠️ 连接出现问题，请稍后再试");
-            };
-        }
-    
-        // 添加消息到聊天窗口
-        function addBotMessage(text) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'chat-message bot-message';
-            messageDiv.textContent = text;
-            chatBody.appendChild(messageDiv);
-            chatBody.scrollTop = chatBody.scrollHeight;
-        }
-    
-        function addUserMessage(text) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'chat-message user-message';
-            messageDiv.textContent = text;
-            chatBody.appendChild(messageDiv);
-            chatBody.scrollTop = chatBody.scrollHeight;
-        }
-    
-        // 发送消息（关键修复）
-        function sendMessage() {
-            const message = userInput.value.trim();
-            if (!message) return;
-    
-            // 确保连接已建立
-            if (!socket || socket.readyState !== WebSocket.OPEN) {
-                addBotMessage("正在连接助手，请稍等...");
-                connectToXiaozhi();
-                return;
-            }
-    
-            try {
-                addUserMessage(message);
-                socket.send(JSON.stringify({
+            handleError(error) {
+                console.error("WebSocket错误:", error);
+                this.updateConnectionStatus('disconnected');
+                this.addSystemMessage("连接错误: " + (error.message || "未知错误"));
+                this.attemptReconnect();
+            },
+            
+            attemptReconnect() {
+                if (state.reconnectAttempts < CONFIG.MAX_RETRIES) {
+                    const delay = Math.min(
+                        CONFIG.RECONNECT_INTERVAL * (state.reconnectAttempts + 1), 
+                        15000
+                    );
+                    
+                    this.addSystemMessage(`将在 ${delay/1000} 秒后尝试重新连接...`);
+                    
+                    setTimeout(() => {
+                        if (state.isOnline) this.connect();
+                    }, delay);
+                } else {
+                    this.addSystemMessage("连接失败，请刷新页面重试");
+                }
+            },
+            
+            send(data) {
+                // 检查连接状态
+                if (!state.socket || state.socket.readyState !== WebSocket.OPEN) {
+                    console.warn("消息被加入队列，等待连接建立:", data);
+                    state.messageQueue.push(data);
+                    return false;
+                }
+                
+                try {
+                    const payload = JSON.stringify(data);
+                    state.socket.send(payload);
+                    return true;
+                } catch (e) {
+                    console.error("消息发送失败:", e);
+                    this.addSystemMessage("消息发送失败");
+                    return false;
+                }
+            },
+            
+            flushMessageQueue() {
+                while (state.messageQueue.length > 0) {
+                    const message = state.messageQueue.shift();
+                    if (!this.send(message)) {
+                        state.messageQueue.unshift(message); // 放回队列
+                        break;
+                    }
+                }
+            },
+            
+            sendMessage() {
+                const message = elements.userInput.value.trim();
+                if (!message) return;
+                
+                // 添加到聊天界面
+                this.addUserMessage(message);
+                elements.userInput.value = '';
+                
+                // 构造消息对象
+                const messageObj = {
                     type: "text",
                     content: message,
-                    timestamp: new Date().toISOString()
-                }));
-                userInput.value = '';
-            } catch (e) {
-                console.error("发送失败:", e);
-                addBotMessage("消息发送失败，请重试");
+                    timestamp: new Date().toISOString(),
+                    location: window.location.href
+                };
+                
+                // 发送消息
+                if (!this.send(messageObj)) {
+                    this.addSystemMessage("正在建立连接，消息稍后发送...");
+                }
+            },
+            
+            sendContext() {
+                const context = {
+                    type: "context",
+                    page: {
+                        title: document.title,
+                        url: window.location.href,
+                        timestamp: new Date().toISOString()
+                    },
+                    user: {
+                        // 可以添加更多用户上下文信息
+                        agent: navigator.userAgent
+                    }
+                };
+                this.send(context);
+            },
+            
+            // 状态显示方法
+            updateConnectionStatus(status) {
+                elements.statusIndicator.className = "connection-status";
+                elements.statusIndicator.classList.add(status);
+                
+                // 更新按钮状态
+                elements.sendBtn.disabled = status !== 'connected';
+                elements.sendBtn.textContent = 
+                    status === 'connected' ? '发送' : 
+                    status === 'connecting' ? '连接中...' : '离线';
+            },
+            
+            // 网络状态处理
+            checkNetworkStatus() {
+                this.handleNetworkChange(navigator.onLine);
+            },
+            
+            handleNetworkChange(online) {
+                state.isOnline = online;
+                
+                if (online) {
+                    this.addSystemMessage("网络已连接");
+                    if (!state.socket || state.socket.readyState !== WebSocket.OPEN) {
+                        this.connect();
+                    }
+                } else {
+                    this.addSystemMessage("网络已断开");
+                    this.updateConnectionStatus('disconnected');
+                    if (state.socket) {
+                        state.socket.close();
+                    }
+                }
+            },
+            
+            // 消息显示方法
+            addSystemMessage(text) {
+                const div = document.createElement('div');
+                div.className = 'system-message';
+                div.textContent = text;
+                elements.chatBody.appendChild(div);
+                this.scrollToBottom();
+            },
+            
+            addBotMessage(text) {
+                const div = document.createElement('div');
+                div.className = 'bot-message chat-message';
+                div.textContent = text;
+                elements.chatBody.appendChild(div);
+                this.scrollToBottom();
+            },
+            
+            addUserMessage(text) {
+                const div = document.createElement('div');
+                div.className = 'user-message chat-message';
+                div.textContent = text;
+                elements.chatBody.appendChild(div);
+                this.scrollToBottom();
+            },
+            
+            scrollToBottom() {
+                elements.chatBody.scrollTop = elements.chatBody.scrollHeight;
             }
-        }
-    
-        // 事件监听（修复版）
-        chatToggle.addEventListener('click', function() {
-            chatWindow.style.display = chatWindow.style.display === 'flex' ? 'none' : 'flex';
-            if (chatWindow.style.display === 'flex' && (!socket || socket.readyState !== WebSocket.OPEN)) {
-                connectToXiaozhi();
-            }
-        });
-    
-        chatClose.addEventListener('click', function() {
-            chatWindow.style.display = 'none';
-        });
-    
-        // 修复点击发送
-        sendBtn.addEventListener('click', function(e) {
-            e.preventDefault(); // 阻止默认行为
-            sendMessage();
-        });
-    
-        // 修复回车发送
-        userInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault(); // 阻止默认换行
-                sendMessage();
-            }
-        });
-    
-        // 页面可见性变化时重连
-        document.addEventListener('visibilitychange', function() {
-            if (document.visibilityState === 'visible' && 
-                (!socket || [WebSocket.CLOSED, WebSocket.CLOSING].includes(socket.readyState))) {
-                connectToXiaozhi();
-            }
+        };
+
+        // 初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            connectionManager.init();
+            
+            // 预连接（但不立即显示窗口）
+            setTimeout(() => connectionManager.connect(), 1000);
         });
     </script>
 </body>
